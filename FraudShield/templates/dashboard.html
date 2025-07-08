@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - FraudGuard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="display-6 fw-bold text-primary">Analytics Dashboard</h1>
+            <a href="{{ url_for('export_csv') }}" class="btn btn-outline-primary">
+                <i class="fas fa-download me-2"></i>Export CSV
+            </a>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Total Transactions</h6>
+                                <h3 class="mb-0">{{ stats.total_transactions }}</h3>
+                            </div>
+                            <i class="fas fa-credit-card fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-danger text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Fraud Detected</h6>
+                                <h3 class="mb-0">{{ stats.fraud_detected }}</h3>
+                                <small>{{ stats.fraud_rate }}% fraud rate</small>
+                            </div>
+                            <i class="fas fa-exclamation-triangle fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">High Risk</h6>
+                                <h3 class="mb-0">{{ stats.high_risk_count }}</h3>
+                                <small>Requires attention</small>
+                            </div>
+                            <i class="fas fa-shield-alt fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Total Processed</h6>
+                                <h3 class="mb-0">${{ "{:,.2f}".format(stats.total_amount_processed) }}</h3>
+                                <small>Avg: ${{ "{:,.2f}".format(stats.average_amount) }}</small>
+                            </div>
+                            <i class="fas fa-dollar-sign fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Recent Alerts -->
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-bell text-warning me-2"></i>
+                            Recent Alerts
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if alerts %}
+                            {% for alert in alerts %}
+                                <div class="alert alert-{% if alert.risk_level == 'critical' %}danger{% elif alert.risk_level == 'high' %}warning{% else %}info{% endif %} d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Transaction #{{ alert.id }}</strong><br>
+                                        <small>
+                                            ${{ "{:,.2f}".format(alert.amount) }} - {{ alert.merchant_category|title }}
+                                            <br>Risk: {{ (alert.fraud_probability * 100)|round(1) }}%
+                                        </small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{% if alert.risk_level == 'critical' %}danger{% elif alert.risk_level == 'high' %}warning{% else %}info{% endif %}">
+                                            {{ alert.risk_level|upper }}
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">{{ alert.timestamp[:16] }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-check-circle fa-3x mb-3"></i>
+                                <p>No high-risk alerts at this time</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-history text-info me-2"></i>
+                            Recent Transactions
+                        </h5>
+                        <a href="{{ url_for('transaction_history') }}" class="btn btn-outline-primary btn-sm">View All</a>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_transactions %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Amount</th>
+                                            <th>Risk</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for transaction in recent_transactions %}
+                                            <tr>
+                                                <td>
+                                                    <a href="{{ url_for('transaction_detail', transaction_id=transaction.id) }}" class="text-decoration-none">
+                                                        #{{ transaction.id }}
+                                                    </a>
+                                                </td>
+                                                <td>${{ "{:,.2f}".format(transaction.amount) }}</td>
+                                                <td>
+                                                    <div class="progress" style="height: 8px;">
+                                                        <div class="progress-bar bg-{% if transaction.fraud_probability > 0.7 %}danger{% elif transaction.fraud_probability > 0.3 %}warning{% else %}success{% endif %}" 
+                                                             style="width: {{ (transaction.fraud_probability * 100)|round(1) }}%"></div>
+                                                    </div>
+                                                    <small>{{ (transaction.fraud_probability * 100)|round(1) }}%</small>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-{% if transaction.status == 'approved' %}success{% elif transaction.status == 'declined' %}danger{% else %}warning{% endif %}">
+                                                        {{ transaction.status|title }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-chart-line fa-3x mb-3"></i>
+                                <p>No transactions processed yet</p>
+                                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Analyze First Transaction
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-bolt text-primary me-2"></i>
+                            Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <a href="{{ url_for('index') }}" class="btn btn-outline-primary w-100 mb-2">
+                                    <i class="fas fa-plus me-2"></i>New Analysis
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{{ url_for('batch_analysis') }}" class="btn btn-outline-info w-100 mb-2">
+                                    <i class="fas fa-upload me-2"></i>Batch Analysis
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{{ url_for('export_csv') }}" class="btn btn-outline-success w-100 mb-2">
+                                    <i class="fas fa-download me-2"></i>Export Data
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{{ url_for('api_stats') }}" class="btn btn-outline-secondary w-100 mb-2" target="_blank">
+                                    <i class="fas fa-code me-2"></i>API Stats
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh dashboard every 30 seconds
+    setInterval(() => {
+        // Only refresh if page is visible
+        if (!document.hidden) {
+            location.reload();
+        }
+    }, 30000);
+    
+    // Add tooltips to progress bars
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.title = `Fraud Risk: ${width}`;
+    });
+});
+</script>
+{% endblock %}

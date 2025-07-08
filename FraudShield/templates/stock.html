@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Market Prediction{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                <h2 class="text-success">Stock Market Prediction</h2>
+                <p class="text-muted">Predict stock price direction using Random Forest machine learning model</p>
+            </div>
+
+            <!-- Navigation -->
+            <div class="mb-3">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Hub
+                </a>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Stock Analysis Input</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.current_price.label(class="form-label") }}
+                                {{ form.current_price(class="form-control") }}
+                                <div class="form-text">Current trading price of the stock</div>
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.volume.label(class="form-label") }}
+                                {{ form.volume(class="form-control") }}
+                                <div class="form-text">Daily trading volume</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.rsi.label(class="form-label") }}
+                                {{ form.rsi(class="form-control") }}
+                                <div class="form-text">RSI > 70 = Overbought, < 30 = Oversold</div>
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.macd.label(class="form-label") }}
+                                {{ form.macd(class="form-control") }}
+                                <div class="form-text">Positive = Bullish, Negative = Bearish</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.moving_avg_20.label(class="form-label") }}
+                                {{ form.moving_avg_20(class="form-control") }}
+                                <div class="form-text">20-day moving average price</div>
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.moving_avg_50.label(class="form-label") }}
+                                {{ form.moving_avg_50(class="form-control") }}
+                                <div class="form-text">50-day moving average price</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                {{ form.volatility.label(class="form-label") }}
+                                {{ form.volatility(class="form-control") }}
+                                <div class="form-text">Price volatility measure</div>
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.price_change_1d.label(class="form-label") }}
+                                {{ form.price_change_1d(class="form-control") }}
+                                <div class="form-text">Yesterday's price change</div>
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.price_change_7d.label(class="form-label") }}
+                                {{ form.price_change_7d(class="form-control") }}
+                                <div class="form-text">Weekly price change</div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-success btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Panel -->
+            <div class="mt-4">
+                <div class="card bg-light border-0">
+                    <div class="card-body">
+                        <h6 class="card-title">How it works:</h6>
+                        <ul class="mb-0 small">
+                            <li><strong>Random Forest Algorithm:</strong> Uses ensemble learning for robust predictions</li>
+                            <li><strong>Technical Indicators:</strong> Analyzes RSI, MACD, moving averages, and price patterns</li>
+                            <li><strong>Risk Assessment:</strong> Considers volatility and market signals</li>
+                            <li><strong>Direction Prediction:</strong> Predicts UP or DOWN movement with confidence levels</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

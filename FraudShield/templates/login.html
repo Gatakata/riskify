@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Riskify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #f97316;
+            --accent-color: #ffffff;
+            --bg-color: #f8fafc;
+            --card-shadow: 0 10px 25px rgba(26, 54, 93, 0.1);
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #2d5a87 100%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .auth-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+        }
+        
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .brand-logo h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+        
+        .brand-logo p {
+            color: #64748b;
+            margin: 5px 0 0 0;
+            font-size: 0.9rem;
+        }
+        
+        .form-title {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+        
+        .btn-primary {
+            background: var(--secondary-color);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: #ea580c;
+            transform: translateY(-1px);
+        }
+        
+        .auth-link {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .auth-link a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .auth-link a:hover {
+            color: #ea580c;
+            text-decoration: underline;
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-danger {
+            background: #fef2f2;
+            color: #dc2626;
+            border-left: 4px solid #dc2626;
+        }
+        
+        .alert-success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border-left: 4px solid #16a34a;
+        }
+        
+        .form-text {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-top: 5px;
+        }
+        
+        .input-group-text {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-right: none;
+            color: #64748b;
+        }
+        
+        .input-group .form-control {
+            border-left: none;
+        }
+        
+        .footer-credit {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        
+        @media (max-width: 576px) {
+            .auth-card {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .brand-logo h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="brand-logo">
+                <img src="{{ url_for('static', filename='riskify-logo.png') }}" alt="Riskify" style="height: 120px; margin-bottom: 15px;">
+                <p>AI Risk Management Platform</p>
+            </div>
+            
+            <h2 class="form-title">Sign In to Your Account</h2>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" novalidate>
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.username_or_email.label(class="form-label") }}
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        {{ form.username_or_email() }}
+                    </div>
+                    {% if form.username_or_email.errors %}
+                        {% for error in form.username_or_email.errors %}
+                            <div class="form-text text-danger">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.password.label(class="form-label") }}
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        {{ form.password() }}
+                    </div>
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}
+                            <div class="form-text text-danger">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                {{ form.submit() }}
+            </form>
+            
+            <div class="auth-link">
+                <p>Don't have an account? <a href="{{ url_for('signup') }}">Create one here</a></p>
+            </div>
+            
+            <!-- Demo Accounts Info -->
+            <div class="mt-4 p-3" style="background: #f8fafc; border-radius: 8px; border-left: 4px solid var(--secondary-color);">
+                <h6 style="color: var(--primary-color); margin-bottom: 10px;">
+                    <i class="fas fa-info-circle"></i> Demo Accounts
+                </h6>
+                <small style="color: #64748b;">
+                    <strong>Risk Manager:</strong> admin / admin123<br>
+                    <strong>Market Analyst:</strong> market_analyst / market123<br>
+                    <strong>Credit Analyst:</strong> credit_analyst / credit123<br>
+                    <strong>Operations Analyst:</strong> ops_analyst / ops123
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-credit">
+        <p>Developer: <strong>Takunda Mcdonald Gatakata</strong> | 0775919353/0718111419 | Data Science and Systems</p>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Form validation enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const inputs = form.querySelectorAll('.form-control');
+            
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() === '') {
+                        this.classList.add('is-invalid');
+                    } else {
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+                    }
+                });
+            });
+            
+            // Auto-focus first input
+            if (inputs.length > 0) {
+                inputs[0].focus();
+            }
+        });
+    </script>
+</body>
+</html>
